@@ -754,7 +754,7 @@ html, body {
           <div class="pcard-shine"></div>
           <div class="pcard-logo">Bermuda<span>Private Bank</span></div>
           <div class="pcard-num">•••• &nbsp;•••• &nbsp;•••• &nbsp;3301</div>
-          <div class="pcard-holder">A. WHITMORE</div>
+          <div class="pcard-holder">ALEXANDER WHITMORE</div>
           <div class="pcard-type">Business</div>
         </div>
       </div>
@@ -1083,7 +1083,7 @@ html, body {
 <!-- WALLET DEMO -->
 <div class="modal-backdrop" id="wallet-modal" onclick="closeModalOnBackdrop(event, 'wallet-modal')">
   <div class="modal"><div class="modal-grab"></div><div class="modal-title">Add to Apple Wallet</div><div class="modal-sub">Choose a Bermuda Bank card for your Wallet pass preview.</div>
-    <div class="form-field"><label>Card</label><select id="wallet-card" onchange="updateWalletPreview()"><option value="Prestige Black|4821|ALEXANDER WHITMORE">Prestige Black · •••• 4821</option><option value="Platinum|7740|ALEXANDER WHITMORE">Platinum · •••• 7740</option><option value="Business|3301|A. WHITMORE">Business · •••• 3301</option></select></div>
+    <div class="form-field"><label>Card</label><select id="wallet-card" onchange="updateWalletPreview()"><option value="Prestige Black|4821">Prestige Black · •••• 4821</option><option value="Platinum|7740">Platinum · •••• 7740</option><option value="Business|3301">Business · •••• 3301</option></select></div>
     <div class="wallet-preview"><div class="wallet-brand">Bermuda <span>Private Bank</span></div><div class="wallet-name" id="wallet-name">ALEXANDER WHITMORE</div><div class="wallet-last4" id="wallet-last4">•••• 4821</div></div>
     <div class="wallet-note">This is a front-end LARP preview. A real Apple Wallet pass requires a signed .pkpass from a server with an Apple Pass Type ID certificate.</div>
     <div class="modal-actions"><button class="modal-btn" onclick="closeModal('wallet-modal')">Close</button><button class="modal-btn primary" onclick="mockWalletAdd()">Add to Wallet</button></div>
@@ -1194,6 +1194,14 @@ const defaultProfile = { first:'Alexander', last:'Whitmore', checking:'84210', s
   {name:'Nobu Restaurant', amount:'-620', category:'Dining'}
 ]};
 function getProfile() { try { return Object.assign({}, defaultProfile, JSON.parse(localStorage.getItem('bermuda-profile') || '{}')); } catch(e) { return defaultProfile; } }
+function cardholderName(p) { return (p.first + ' ' + p.last).toUpperCase(); }
+function renderProfileName(p) {
+  document.getElementById('dash-name').textContent = p.first + ' ' + p.last.charAt(0) + '.';
+  document.getElementById('profile-name-display').textContent = p.first + ' ' + p.last;
+  document.querySelector('.profile-av').textContent = (p.first.charAt(0) + p.last.charAt(0)).toUpperCase();
+  document.querySelectorAll('.pcard-holder').forEach(el => { el.textContent = cardholderName(p); });
+  updateWalletPreview(p);
+}
 function money(value) { return '$' + Number(value || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}); }
 function openProfileModal() {
   const p = getProfile();
@@ -1214,8 +1222,7 @@ function saveProfile() {
   const p = { first:document.getElementById('profile-first').value.trim() || 'Alexander', last:document.getElementById('profile-last').value.trim() || 'Whitmore', checking:document.getElementById('profile-checking').value || '0', savings:document.getElementById('profile-savings').value || '0', invested:document.getElementById('profile-invested').value || '0', transactions:[] };
   document.querySelectorAll('#transaction-editor .editable-txn').forEach(row => { const f = row.querySelectorAll('input'); if (f[0].value.trim()) p.transactions.push({name:f[0].value.trim(), amount:f[1].value.trim() || '0', category:f[2].value.trim() || 'Other'}); });
   localStorage.setItem('bermuda-profile', JSON.stringify(p));
-  document.getElementById('dash-name').textContent = p.first + ' ' + p.last.charAt(0) + '.';
-  document.getElementById('profile-name-display').textContent = p.first + ' ' + p.last;
+  renderProfileName(p);
   document.getElementById('checking-display').textContent = money(p.checking);
   document.getElementById('savings-display').textContent = money(p.savings);
   document.getElementById('invested-display').textContent = Number(p.invested) >= 1000000 ? '$' + (Number(p.invested)/1000000).toFixed(2) + 'M' : money(p.invested);
@@ -1225,12 +1232,11 @@ function saveProfile() {
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 function closeModalOnBackdrop(event, id) { if (event.target.id === id) closeModal(id); }
 function openWalletModal() { updateWalletPreview(); document.getElementById('wallet-modal').classList.add('open'); }
-function updateWalletPreview() { const v = document.getElementById('wallet-card').value.split('|'); document.getElementById('wallet-name').textContent = v[2]; document.getElementById('wallet-last4').textContent = '•••• ' + v[1]; }
+function updateWalletPreview(p = getProfile()) { const v = document.getElementById('wallet-card').value.split('|'); document.getElementById('wallet-name').textContent = cardholderName(p); document.getElementById('wallet-last4').textContent = '•••• ' + v[1]; }
 function mockWalletAdd() { closeModal('wallet-modal'); showToast('Wallet pass preview saved'); }
 window.addEventListener('load', () => {
   const p = getProfile();
-  document.getElementById('dash-name').textContent = p.first + ' ' + p.last.charAt(0) + '.';
-  document.getElementById('profile-name-display').textContent = p.first + ' ' + p.last;
+  renderProfileName(p);
   document.getElementById('checking-display').textContent = money(p.checking);
   document.getElementById('savings-display').textContent = money(p.savings);
   document.getElementById('invested-display').textContent = Number(p.invested) >= 1000000 ? '$' + (Number(p.invested)/1000000).toFixed(2) + 'M' : money(p.invested);
