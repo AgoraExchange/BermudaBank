@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Bermuda Bank">
 <meta name="theme-color" content="#07070D">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -547,6 +547,38 @@ html, body {
 /* fade-in animation on screen mount */
 @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
 .fade-up { animation: fadeUp .4s ease both; }
+
+/* Interactive overlays */
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.68); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); z-index:300; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity .25s ease; }
+.modal-backdrop.open { opacity:1; pointer-events:auto; }
+.modal { width:100%; max-height:88dvh; overflow:auto; background:linear-gradient(180deg,#171722,#0c0c14); border:1px solid var(--border2); border-radius:24px 24px 0 0; padding:12px 20px calc(22px + var(--safe-bot)); transform:translateY(28px); transition:transform .3s ease; }
+.modal-backdrop.open .modal { transform:translateY(0); }
+.modal-grab { width:36px; height:4px; border-radius:4px; background:var(--border2); margin:0 auto 18px; }
+.modal-title { font-family:'Cormorant Garamond',serif; font-size:26px; color:var(--text); margin-bottom:4px; }
+.modal-sub { font-size:11px; color:var(--text3); margin-bottom:18px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.form-field { margin-bottom:12px; }
+.form-field.full { grid-column:1/-1; }
+.form-field label { display:block; font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; margin:0 0 6px 2px; }
+.form-field input, .form-field select { width:100%; height:44px; border:1px solid var(--border2); border-radius:11px; padding:0 12px; background:var(--bg2); color:var(--text); font:400 13px 'Jost',sans-serif; outline:none; }
+.form-field input:focus, .form-field select:focus { border-color:var(--gold-dim); }
+.modal-actions { display:flex; gap:10px; margin-top:8px; }
+.modal-btn { flex:1; min-height:46px; border-radius:12px; border:1px solid var(--border2); background:var(--bg2); color:var(--text2); font:400 13px 'Jost',sans-serif; cursor:pointer; }
+.modal-btn.primary { color:#16120a; border-color:var(--gold); background:linear-gradient(135deg,var(--gold2),var(--gold)); }
+.wallet-preview { border-radius:18px; padding:18px; min-height:145px; margin:12px 0 16px; position:relative; overflow:hidden; background:linear-gradient(135deg,#1a1509,#46320f 52%,#17120b); border:1px solid #c9a84c88; }
+.wallet-preview::after { content:'B'; position:absolute; right:-5px; bottom:-26px; font:150px 'Cormorant Garamond',serif; color:#fff1; }
+.wallet-brand { font:16px 'Cormorant Garamond',serif; color:var(--gold2); letter-spacing:.08em; }
+.wallet-name { position:absolute; bottom:18px; left:18px; font-size:10px; letter-spacing:.12em; color:#f0eee8aa; }
+.wallet-last4 { position:absolute; bottom:18px; right:18px; font-size:10px; color:var(--gold2); letter-spacing:.12em; }
+.wallet-note { padding:10px 12px; border-radius:10px; background:#c9a84c10; border:1px solid #c9a84c30; font-size:10px; line-height:1.5; color:var(--text3); }
+.manage-row { display:flex; justify-content:space-between; align-items:center; margin:16px 0 8px; color:var(--text3); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
+.mini-btn { color:var(--gold); background:none; border:0; font:400 11px 'Jost',sans-serif; cursor:pointer; }
+.editable-txn { display:flex; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
+.editable-txn input { min-width:0; flex:1; height:36px; }
+.editable-txn input:last-of-type { max-width:90px; }
+.remove-txn { width:30px; height:30px; border-radius:50%; background:#c0504815; border:1px solid #c0504844; color:var(--red); cursor:pointer; }
+.wallet-launch { margin:10px 20px 0; padding:12px 14px; border:1px solid #c9a84c44; border-radius:12px; color:var(--gold); background:#c9a84c0d; font-size:11px; text-align:center; cursor:pointer; }
+@media (min-width:700px) { #app { max-width:430px; margin:0 auto; box-shadow:0 0 80px #000; } #nav { max-width:430px; left:50%; transform:translateX(-50%); } .modal { max-width:430px; margin:0 auto; } }
 </style>
 </head>
 <body>
@@ -571,7 +603,7 @@ html, body {
     <div class="topbar">
       <div>
         <div class="topbar-greeting">Good morning,</div>
-        <div class="topbar-name">Nicolas F.</div>
+        <div class="topbar-name" id="dash-name">Alexander W.</div>
       </div>
       <div class="icon-btn" onclick="showToast('Notifications')">
         <svg viewBox="0 0 20 20"><path d="M6 8a4 4 0 0 1 8 0c0 4 2 5 2 5H4s2-1 2-5"/><path d="M10 19a2 2 0 0 1-2-2h4a2 2 0 0 1-2 2z"/></svg>
@@ -588,17 +620,17 @@ html, body {
         <div class="wc-accounts">
           <div class="wc-acct">
             <div class="wc-acct-label">Checking</div>
-            <div class="wc-acct-val">$84,210</div>
+            <div class="wc-acct-val" id="checking-display">$84,210</div>
             <div class="wc-acct-sub">Prestige •• 4821</div>
           </div>
           <div class="wc-acct">
             <div class="wc-acct-label">Savings</div>
-            <div class="wc-acct-val">$512,400</div>
+            <div class="wc-acct-val" id="savings-display">$512,400</div>
             <div class="wc-acct-sub">4.8% APY</div>
           </div>
           <div class="wc-acct">
             <div class="wc-acct-label">Invested</div>
-            <div class="wc-acct-val">$2.25M</div>
+            <div class="wc-acct-val" id="invested-display">$2.25M</div>
             <div class="wc-acct-sub">+12.4% YTD</div>
           </div>
         </div>
@@ -696,7 +728,7 @@ html, body {
   <div id="cards" class="screen">
     <div class="topbar">
       <div class="topbar-title">My Cards</div>
-      <div class="icon-btn" onclick="showToast('Add new card')">
+      <div class="icon-btn" onclick="openWalletModal()" aria-label="Add to Apple Wallet">
         <svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg>
       </div>
     </div>
@@ -708,21 +740,21 @@ html, body {
           <div class="pcard-circles"><span></span><span></span></div>
           <div class="pcard-chip"></div>
           <div class="pcard-num">•••• &nbsp;•••• &nbsp;•••• &nbsp;4821</div>
-          <div class="pcard-holder">Nicolas Franco</div>
+          <div class="pcard-holder">ALEXANDER WHITMORE</div>
           <div class="pcard-type">Prestige Black</div>
         </div>
         <div class="pcard pcard-plat" onclick="showToast('Platinum selected')">
           <div class="pcard-shine"></div>
           <div class="pcard-logo">Bermuda<span>Private Bank</span></div>
           <div class="pcard-num">•••• &nbsp;•••• &nbsp;•••• &nbsp;7740</div>
-          <div class="pcard-holder">Nicolas Franco</div>
+          <div class="pcard-holder">ALEXANDER WHITMORE</div>
           <div class="pcard-type">Platinum</div>
         </div>
         <div class="pcard pcard-biz" onclick="showToast('Business card selected')">
           <div class="pcard-shine"></div>
           <div class="pcard-logo">Bermuda<span>Private Bank</span></div>
           <div class="pcard-num">•••• &nbsp;•••• &nbsp;•••• &nbsp;3301</div>
-          <div class="pcard-holder">Nicolas Franco</div>
+          <div class="pcard-holder">A. WHITMORE</div>
           <div class="pcard-type">Business</div>
         </div>
       </div>
@@ -737,6 +769,7 @@ html, body {
         <div class="limit-hdr"><span>Used $8,420</span><span>$250,000 limit</span></div>
         <div class="bar-track"><div class="bar-fill"></div></div>
       </div>
+      <div class="wallet-launch fade-up" style="animation-delay:.09s" onclick="openWalletModal()">＋ Add a card to Apple Wallet</div>
 
       <div class="sec-hdr fade-up" style="animation-delay:.1s">
         <h2>Card Transactions</h2>
@@ -931,16 +964,16 @@ html, body {
       <div class="profile-hero fade-up">
         <div class="profile-av">AW</div>
         <div>
-          <div class="profile-name">Alexander Whitmore</div>
+          <div class="profile-name" id="profile-name-display">Alexander Whitmore</div>
           <div class="profile-tier">◆ Prestige Black Member</div>
         </div>
-        <div class="profile-edit" onclick="showToast('Edit Profile')">Edit</div>
+        <div class="profile-edit" onclick="openProfileModal()">Edit</div>
       </div>
 
       <div class="pref-section fade-up" style="animation-delay:.05s">
         <div class="pref-group-lbl">Account</div>
         <div class="pref-list">
-          <div class="pref-row" onclick="showToast('Personal details')">
+          <div class="pref-row" onclick="openProfileModal()">
             <div class="pref-ico" style="background:#1A1408"><svg style="stroke:#C9A84C" viewBox="0 0 16 16"><circle cx="8" cy="6" r="3"/><path d="M2 14a6 6 0 0 1 12 0"/></svg></div>
             <span class="pref-lbl">Personal Details</span>
             <div class="pref-right"><span class="pref-chev">›</span></div>
@@ -1029,6 +1062,33 @@ html, body {
 
 <!-- TOAST -->
 <div id="toast"></div>
+
+<!-- PROFILE EDITOR -->
+<div class="modal-backdrop" id="profile-modal" onclick="closeModalOnBackdrop(event, 'profile-modal')">
+  <div class="modal">
+    <div class="modal-grab"></div><div class="modal-title">Personal details</div><div class="modal-sub">Edit your private banking profile and demo account data.</div>
+    <div class="form-grid">
+      <div class="form-field"><label>First name</label><input id="profile-first" value="Alexander"></div>
+      <div class="form-field"><label>Last name</label><input id="profile-last" value="Whitmore"></div>
+      <div class="form-field"><label>Checking balance</label><input id="profile-checking" inputmode="decimal" value="84210"></div>
+      <div class="form-field"><label>Savings balance</label><input id="profile-savings" inputmode="decimal" value="512400"></div>
+      <div class="form-field full"><label>Invested balance</label><input id="profile-invested" inputmode="decimal" value="2251840"></div>
+    </div>
+    <div class="manage-row"><span>Demo transactions</span><button class="mini-btn" onclick="addTransactionRow()">＋ Add transaction</button></div>
+    <div id="transaction-editor"></div>
+    <div class="modal-actions"><button class="modal-btn" onclick="closeModal('profile-modal')">Cancel</button><button class="modal-btn primary" onclick="saveProfile()">Save changes</button></div>
+  </div>
+</div>
+
+<!-- WALLET DEMO -->
+<div class="modal-backdrop" id="wallet-modal" onclick="closeModalOnBackdrop(event, 'wallet-modal')">
+  <div class="modal"><div class="modal-grab"></div><div class="modal-title">Add to Apple Wallet</div><div class="modal-sub">Choose a Bermuda Bank card for your Wallet pass preview.</div>
+    <div class="form-field"><label>Card</label><select id="wallet-card" onchange="updateWalletPreview()"><option value="Prestige Black|4821|ALEXANDER WHITMORE">Prestige Black · •••• 4821</option><option value="Platinum|7740|ALEXANDER WHITMORE">Platinum · •••• 7740</option><option value="Business|3301|A. WHITMORE">Business · •••• 3301</option></select></div>
+    <div class="wallet-preview"><div class="wallet-brand">Bermuda <span>Private Bank</span></div><div class="wallet-name" id="wallet-name">ALEXANDER WHITMORE</div><div class="wallet-last4" id="wallet-last4">•••• 4821</div></div>
+    <div class="wallet-note">This is a front-end LARP preview. A real Apple Wallet pass requires a signed .pkpass from a server with an Apple Pass Type ID certificate.</div>
+    <div class="modal-actions"><button class="modal-btn" onclick="closeModal('wallet-modal')">Close</button><button class="modal-btn primary" onclick="mockWalletAdd()">Add to Wallet</button></div>
+  </div>
+</div>
 
 <script>
 // ─── PWA ───
@@ -1124,6 +1184,58 @@ function showToast(msg) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
+
+// ——— PROFILE DATA & EDITOR ———
+const defaultProfile = { first:'Alexander', last:'Whitmore', checking:'84210', savings:'512400', invested:'2251840', transactions:[
+  {name:'Dividends Received', amount:'+3200', category:'Portfolio'},
+  {name:'Four Seasons Resort', amount:'-1840', category:'Travel'},
+  {name:'Incoming Wire Transfer', amount:'+25000', category:'Incoming'},
+  {name:'NetJets Private Charter', amount:'-14200', category:'Travel'},
+  {name:'Nobu Restaurant', amount:'-620', category:'Dining'}
+]};
+function getProfile() { try { return Object.assign({}, defaultProfile, JSON.parse(localStorage.getItem('bermuda-profile') || '{}')); } catch(e) { return defaultProfile; } }
+function money(value) { return '$' + Number(value || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+function openProfileModal() {
+  const p = getProfile();
+  ['first','last','checking','savings','invested'].forEach(k => document.getElementById('profile-' + k).value = p[k]);
+  renderTransactionEditor(p.transactions || defaultProfile.transactions);
+  document.getElementById('profile-modal').classList.add('open');
+}
+function renderTransactionEditor(items) {
+  document.getElementById('transaction-editor').innerHTML = items.map((x, i) => `<div class="editable-txn"><input aria-label="Transaction name" value="${escapeAttr(x.name)}"><input aria-label="Transaction amount" inputmode="decimal" value="${escapeAttr(x.amount)}"><input aria-label="Transaction category" value="${escapeAttr(x.category)}"><button class="remove-txn" onclick="this.parentElement.remove()" aria-label="Remove transaction">×</button></div>`).join('');
+}
+function addTransactionRow() {
+  const el = document.createElement('div'); el.className = 'editable-txn';
+  el.innerHTML = '<input aria-label="Transaction name" placeholder="Merchant or description"><input aria-label="Transaction amount" inputmode="decimal" placeholder="-500"><input aria-label="Transaction category" placeholder="Category"><button class="remove-txn" onclick="this.parentElement.remove()" aria-label="Remove transaction">×</button>';
+  document.getElementById('transaction-editor').appendChild(el); el.querySelector('input').focus();
+}
+function escapeAttr(value) { return String(value || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function saveProfile() {
+  const p = { first:document.getElementById('profile-first').value.trim() || 'Alexander', last:document.getElementById('profile-last').value.trim() || 'Whitmore', checking:document.getElementById('profile-checking').value || '0', savings:document.getElementById('profile-savings').value || '0', invested:document.getElementById('profile-invested').value || '0', transactions:[] };
+  document.querySelectorAll('#transaction-editor .editable-txn').forEach(row => { const f = row.querySelectorAll('input'); if (f[0].value.trim()) p.transactions.push({name:f[0].value.trim(), amount:f[1].value.trim() || '0', category:f[2].value.trim() || 'Other'}); });
+  localStorage.setItem('bermuda-profile', JSON.stringify(p));
+  document.getElementById('dash-name').textContent = p.first + ' ' + p.last.charAt(0) + '.';
+  document.getElementById('profile-name-display').textContent = p.first + ' ' + p.last;
+  document.getElementById('checking-display').textContent = money(p.checking);
+  document.getElementById('savings-display').textContent = money(p.savings);
+  document.getElementById('invested-display').textContent = Number(p.invested) >= 1000000 ? '$' + (Number(p.invested)/1000000).toFixed(2) + 'M' : money(p.invested);
+  document.querySelectorAll('#dash .txn').forEach((row, i) => { const item = p.transactions[i]; if (!item) { row.style.display = 'none'; return; } row.style.display = ''; row.querySelector('.txn-name').textContent = item.name; row.querySelector('.txn-amt').textContent = (Number(item.amount) >= 0 ? '+' : '−') + money(Math.abs(Number(item.amount))); row.querySelector('.txn-amt').className = 'txn-amt ' + (Number(item.amount) >= 0 ? 'pos' : 'neg'); row.querySelector('.txn-cat').textContent = item.category; });
+  closeModal('profile-modal'); showToast('Profile saved locally');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModalOnBackdrop(event, id) { if (event.target.id === id) closeModal(id); }
+function openWalletModal() { updateWalletPreview(); document.getElementById('wallet-modal').classList.add('open'); }
+function updateWalletPreview() { const v = document.getElementById('wallet-card').value.split('|'); document.getElementById('wallet-name').textContent = v[2]; document.getElementById('wallet-last4').textContent = '•••• ' + v[1]; }
+function mockWalletAdd() { closeModal('wallet-modal'); showToast('Wallet pass preview saved'); }
+window.addEventListener('load', () => {
+  const p = getProfile();
+  document.getElementById('dash-name').textContent = p.first + ' ' + p.last.charAt(0) + '.';
+  document.getElementById('profile-name-display').textContent = p.first + ' ' + p.last;
+  document.getElementById('checking-display').textContent = money(p.checking);
+  document.getElementById('savings-display').textContent = money(p.savings);
+  document.getElementById('invested-display').textContent = Number(p.invested) >= 1000000 ? '$' + (Number(p.invested)/1000000).toFixed(2) + 'M' : money(p.invested);
+  document.querySelectorAll('#dash .txn').forEach((row, i) => { const item = p.transactions[i]; if (!item) { row.style.display = 'none'; return; } row.querySelector('.txn-name').textContent = item.name; row.querySelector('.txn-amt').textContent = (Number(item.amount) >= 0 ? '+' : '−') + money(Math.abs(Number(item.amount))); row.querySelector('.txn-amt').className = 'txn-amt ' + (Number(item.amount) >= 0 ? 'pos' : 'neg'); row.querySelector('.txn-cat').textContent = item.category; });
+});
 </script>
 </body>
 </html>
